@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 
 
 
-//use the middleware for the fatch data  
+//use the middleware for the fatch data
 const app = express()
 app.use(cookieParser())
 app.use(express.json())

@@ -1,39 +1,35 @@
 const postModel = require('../models/post.model');
 const { generateCaption } = require("../service/ai.service");
+const {uploadFile} = require("../service/storage.service");
+const { v4: uuidv4 } = require('uuid'); 
+
 
 async function createPostController(req, res) {
-    try {
-        const file = req.file;
-        console.log("File received:", file);
-//check the file 
-        if (!file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
 
-        // Convert the uploaded image to Base64
-        const base64Image = Buffer.from(file.buffer).toString('base64');
+ const file  = req.file;
+ console.log("file received:", file);
+ 
 
-        // Generate caption using AI service
-        const caption = await generateCaption(base64Image);
+ const base64ImageFile = new Buffer.from(file.buffer).toString('base64');
 
-        console.log("Generated caption:", caption);
-      
+// const caption = await generateCaption(base64ImageFile);
+// const result = await uploadFile(file.buffer, `${uuidv4()}`);
 
-        // Save post to DB (optional if you want to store)
-        const newPost = await postModel.create({
-            image: base64Image,
-            caption,
-        });
+const [caption, result] = await Promise.all([
+    generateCaption(base64ImageFile),
+    uploadFile(file.buffer, `${uuidv4()}`)
+]);
 
-        res.status(201).json({
-            message: "Post created successfully",
-            post: newPost
-        });
+const post = await postModel.create({
+   caption: caption,
+   image: result.url,
+   user: req.user._id,
+});
 
-    } catch (error) {
-        console.error("Error in createPostController:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
-    }
+res.status(201).json({
+    message: "Post created successfully",
+    post
+});
 }
 
 module.exports = {

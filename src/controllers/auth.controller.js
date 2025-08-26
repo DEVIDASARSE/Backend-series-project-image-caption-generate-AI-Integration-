@@ -5,6 +5,7 @@ const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 
+
 //register for the user
 async function registerController(req, res) {
     try {
